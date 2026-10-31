@@ -1,0 +1,301 @@
+{
+  "package": "drawer_db",
+  "entry": "drawer_db.main",
+  "decisions": [
+    "주제는 도서 대여. 테이블 4개: member, category, book, rental. 1:N 관계 2개: category(1)-book(N), member(1)-rental(N), book(1)-rental(N)",
+    "DB는 SQLite. 파일 기반, sqlite3 표준 라이브러리 사용",
+    "CLI 프로그램. python -m drawer_db.main [명령]. 명령: init(스키마), seed(샘플입력), queries(15개쿼리실행결과출력), all(init+seed+queries)",
+    "인자 없이 실행하면 all 과 동일하게 동작한다",
+    "DB 파일 경로는 첫 위치 인자로 받고 기본값은 현재 폴더의 drawer.db",
+    "member 10행: id=1 김민수, id=2 이영희, id=3 박철수, id=4 최지은, id=5 정현우, id=6 강수진, id=7 윤재호, id=8 임보라, id=9 한동석, id=10 오미란. email은 각 member{id}@example.com 형식으로 UNIQUE",
+    "category 10행: id=1 소설, id=2 시, id=3 에세이, id=4 역사, id=5 과학, id=6 경제, id=7 예술, id=8 자기계발, id=9 여행, id=10 만화",
+    "book 10행: id=1 title='토지' category_id=1, id=2 title='데미안' category_id=1, id=3 title='진달래꽃' category_id=2, id=4 title='어린왕자' category_id=1, id=5 title='코스모스' category_id=5, id=6 title='총균쇠' category_id=4, id=7 title='국부론' category_id=6, id=8 title='아프니까청춘이다' category_id=8, id=9 title='먼나라이웃나라' category_id=10, id=10 title='나미야잡화점의기적' category_id=1",
+    "rental 12행: id 1..12. member_id/book_id/rented_at(YYYY-MM-DD)/returned_at(NULL 또는 날짜)/is_overdue(0/1). id=1 member1 book1 rented 2024-01-05 returned 2024-01-15 overdue0, id=2 member2 book2 rented 2024-01-10 returned NULL overdue0, id=3 member3 book3 rented 2024-02-01 returned NULL overdue1, id=4 member1 book5 rented 2024-02-10 returned 2024-02-20 overdue0, id=5 member4 book6 rented 2024-02-15 returned NULL overdue1, id=6 member5 book4 rented 2024-03-01 returned 2024-03-05 overdue0, id=7 member2 book7 rented 2024-03-10 returned NULL overdue0, id=8 member6 book8 rented 2024-03-12 returned 2024-03-22 overdue0, id=9 member1 book9 rented 2024-03-15 returned NULL overdue1, id=10 member7 book10 rented 2024-03-20 returned 2024-03-30 overdue0, id=11 member8 book1 rented 2024-04-01 returned NULL overdue0, id=12 member3 book2 rented 2024-04-05 returned NULL overdue0",
+    "SQL 파일 3개는 패키지 안 sql/ 폴더에 고정 텍스트로 둔다: schema.sql, seed.sql, queries.sql. init/seed 는 이 파일을 읽어 실행한다",
+    "queries 명령은 15개 쿼리를 번호(1..15)와 한줄설명과 함께 실행하고 결과를 텍스트로 stdout 에 출력한다. 각 쿼리 블록은 '=== Q{n}: {설명} ===' 헤더로 시작한다",
+    "쿼리 실행 순서 고정: Q1~Q4 기본조회, Q5~Q8 조인, Q9~Q11 집계, Q12 서브쿼리, Q13 UPDATE Q14 DELETE, Q15 CREATE INDEX. UPDATE/DELETE 후 queries 를 다시 돌리면 결과가 달라지므로 all/queries 는 매번 init+seed 로 DB를 재생성한 뒤 실행한다",
+    "PRAGMA foreign_keys=ON 을 커넥션마다 실행해 FK 를 강제한다"
+  ],
+  "forbidden": [
+    {
+      "pattern": "\\bfastapi\\b",
+      "why": "백엔드 프레임워크 사용 금지"
+    },
+    {
+      "pattern": "\\bflask\\b",
+      "why": "백엔드 프레임워크 사용 금지"
+    },
+    {
+      "pattern": "\\bdjango\\b",
+      "why": "백엔드 프레임워크 사용 금지"
+    },
+    {
+      "pattern": "\\bCREATE\\s+VIEW\\b",
+      "why": "뷰 사용 금지"
+    },
+    {
+      "pattern": "\\bCREATE\\s+TRIGGER\\b",
+      "why": "트리거 사용 금지"
+    },
+    {
+      "pattern": "\\bCREATE\\s+PROCEDURE\\b",
+      "why": "프로시저 사용 금지"
+    }
+  ],
+  "requirements": [],
+  "modules": [
+    {
+      "path": "__init__.py",
+      "purpose": "패키지 초기화. 빈 파일.",
+      "covers": [],
+      "imports_from": [],
+      "api": []
+    },
+    {
+      "path": "errors.py",
+      "purpose": "패키지 공용 예외 정의.",
+      "covers": [
+        "기능4 FK 무결성"
+      ],
+      "imports_from": [],
+      "api": [
+        "class DrawerError(Exception): def __init__(self, message: str, hint: str | None = None)"
+      ]
+    },
+    {
+      "path": "sql/schema.sql",
+      "purpose": "CREATE TABLE 스키마. PK/FK/NOT NULL/UNIQUE 포함.",
+      "covers": [
+        "요구사항2",
+        "요구사항3",
+        "제출물 스키마 SQL"
+      ],
+      "imports_from": [],
+      "api": []
+    },
+    {
+      "path": "sql/seed.sql",
+      "purpose": "각 테이블 샘플 INSERT (부모 먼저).",
+      "covers": [
+        "요구사항4",
+        "제출물 INSERT SQL"
+      ],
+      "imports_from": [],
+      "api": []
+    },
+    {
+      "path": "sql/queries.sql",
+      "purpose": "핵심 SQL 15개. 각 쿼리 앞에 한줄 설명 주석.",
+      "covers": [
+        "요구사항5",
+        "요구사항6",
+        "제출물 쿼리 SQL"
+      ],
+      "imports_from": [],
+      "api": []
+    },
+    {
+      "path": "db.py",
+      "purpose": "SQLite 커넥션 열기와 FK 활성화, SQL 스크립트/쿼리 실행 헬퍼.",
+      "covers": [
+        "기능1",
+        "기능3 FK 동작"
+      ],
+      "imports_from": [
+        "errors.py"
+      ],
+      "api": [
+        "def connect(db_path: str) -> sqlite3.Connection",
+        "def exec_script(conn: sqlite3.Connection, script_sql: str) -> None",
+        "def run_query(conn: sqlite3.Connection, sql: str) -> tuple[list[str], list[tuple]]"
+      ]
+    },
+    {
+      "path": "resources.py",
+      "purpose": "__file__ 기준으로 sql 파일 텍스트를 읽어 반환.",
+      "covers": [
+        "제출물 구성"
+      ],
+      "imports_from": [
+        "errors.py"
+      ],
+      "api": [
+        "def read_sql(name: str) -> str",
+        "def schema_sql() -> str",
+        "def seed_sql() -> str",
+        "def queries_sql() -> str"
+      ]
+    },
+    {
+      "path": "queries.py",
+      "purpose": "queries.sql 을 개별 쿼리+설명으로 분할하고 실행 결과를 텍스트로 포맷.",
+      "covers": [
+        "요구사항5",
+        "요구사항6"
+      ],
+      "imports_from": [
+        "db.py",
+        "resources.py"
+      ],
+      "api": [
+        "class QueryItem: def __init__(self, number: int, description: str, sql: str)",
+        "def parse_queries(queries_sql_text: str) -> list[QueryItem]",
+        "def format_result(columns: list[str], rows: list[tuple]) -> str",
+        "def run_all(conn: sqlite3.Connection) -> str"
+      ]
+    },
+    {
+      "path": "service.py",
+      "purpose": "init/seed/queries/all 상위 동작을 조립.",
+      "covers": [
+        "요구사항1~6 통합"
+      ],
+      "imports_from": [
+        "db.py",
+        "resources.py",
+        "queries.py",
+        "errors.py"
+      ],
+      "api": [
+        "def do_init(db_path: str) -> None",
+        "def do_seed(db_path: str) -> None",
+        "def do_queries(db_path: str) -> str",
+        "def do_all(db_path: str) -> str"
+      ]
+    },
+    {
+      "path": "main.py",
+      "purpose": "CLI 진입점. 명령과 db 경로 파싱 후 service 호출, 결과 출력.",
+      "covers": [
+        "실행 진입점"
+      ],
+      "imports_from": [
+        "service.py",
+        "errors.py"
+      ],
+      "api": [
+        "def parse_args(argv: list[str]) -> tuple[str, str]",
+        "def main(argv: list[str] | None = None) -> int"
+      ]
+    }
+  ],
+  "setup": [],
+  "smoke": [
+    {
+      "args": "init d1.db",
+      "expect": "ok",
+      "covers": [
+        "요구사항2",
+        "제출물 스키마 SQL",
+        "실행 진입점"
+      ],
+      "contains": "member",
+      "why": "init 은 schema.sql 을 실행해 테이블을 만든다. sqlite_master 나 실행 로그로 member 테이블 생성이 드러나야 한다. 최소한 완료 메시지 또는 테이블명이 나온다"
+    },
+    {
+      "args": "seed d2.db",
+      "setup": [
+        "python -m drawer_db.main init d2.db"
+      ],
+      "expect": "ok",
+      "covers": [
+        "요구사항4",
+        "제출물 INSERT SQL"
+      ],
+      "contains": "김민수",
+      "why": "seed 는 부모 먼저 INSERT 한다. member id=1 김민수 데이터가 들어간 결과가 출력에 드러나야 한다"
+    },
+    {
+      "args": "queries d3.db",
+      "expect": "ok",
+      "covers": [
+        "요구사항5",
+        "요구사항6",
+        "제출물 쿼리 SQL"
+      ],
+      "contains": "=== Q1:",
+      "why": "queries 는 15개 쿼리를 번호와 설명 헤더로 실행한다. 첫 헤더 형식 '=== Q1:' 이 반드시 나온다"
+    },
+    {
+      "args": "queries d4.db",
+      "expect": "ok",
+      "covers": [
+        "요구사항5",
+        "요구사항6"
+      ],
+      "contains": "=== Q15:",
+      "why": "쿼리 순서 고정: Q15 는 CREATE INDEX. 15개가 다 실행되면 Q15 헤더가 나온다"
+    },
+    {
+      "args": "queries d5.db",
+      "expect": "ok",
+      "covers": [
+        "기능1",
+        "요구사항1~6 통합"
+      ],
+      "contains": "박철수",
+      "why": "Q3 rental id=3 는 member3 박철수이고 is_overdue=1. 연체 조회나 조인 결과에 박철수가 나타난다. 조인이 동작해야 회원 이름이 출력된다"
+    },
+    {
+      "args": "",
+      "args_note": "인자 없이 all 동작",
+      "expect": "ok",
+      "covers": [
+        "요구사항1~6 통합",
+        "제출물 구성"
+      ],
+      "contains": "=== Q1:",
+      "why": "인자 없으면 all(init+seed+queries)로 동작. queries 헤더가 나와야 전체 흐름이 돈 것이다"
+    },
+    {
+      "args": "queries d6.db",
+      "expect": "ok",
+      "covers": [
+        "요구사항5"
+      ],
+      "contains": "토지",
+      "why": "book id=1 title 토지. book1 은 rental id=1(member1)과 id=11(member8)에 참조됨. 조인/집계 쿼리에 토지가 등장한다"
+    },
+    {
+      "args": "badcmd d7.db",
+      "expect": "error",
+      "covers": [
+        "실행 진입점"
+      ],
+      "contains": "badcmd",
+      "why": "정의되지 않은 명령은 오류로 끝나야 한다. 잘못된 명령 이름이 오류 메시지에 드러난다"
+    },
+    {
+      "args": "queries",
+      "args_note": "db 경로 생략, 기본 drawer.db",
+      "expect": "ok",
+      "covers": [
+        "요구사항3",
+        "기능3 FK 동작"
+      ],
+      "contains": "=== Q9:",
+      "why": "db 경로 기본값 drawer.db 로 동작. Q9 는 집계 쿼리. FK 활성화된 상태로 매번 재생성되어 집계 헤더가 나온다"
+    },
+    {
+      "args": "seed d8.db",
+      "expect": "error",
+      "covers": [
+        "기능4 FK 무결성"
+      ],
+      "contains": "error",
+      "why": "init 없이 seed 하면 스키마가 없어 INSERT 가 실패한다. 테이블 부재로 오류가 발생해야 한다"
+    }
+  ],
+  "fixtures": [],
+  "docs": [
+    {
+      "path": "README.md",
+      "sections": [
+        "주제와 테이블 설계",
+        "실행 방법",
+        "1:N 관계 설명",
+        "쿼리 15개 목록"
+      ]
+    }
+  ]
+}
