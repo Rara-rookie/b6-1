@@ -1,0 +1,17 @@
+$ python -m drawer_db.main all drawer.db
+=== Q1: Q1. 회원 테이블에서 전체 회원을 이름 오름차순으로 조회한다. ===
+id | name | email               
+---+------+---------------------
+6  | 강수진  | member6@example.com 
+1  | 김민수  | member1@example.com 
+3  | 박철수  | member3@example.com 
+10 | 오미란  | member10@example.com
+7  | 윤재호  | member7@example.com 
+2  | 이영희  | member2@example.com 
+8  | 임보라  | member8@example.com 
+5  | 정현우  | member5@example.com 
+4  | 최지은  | member4@example.com 
+9  | 한동석  | member9@example.com 
+
+... (이하 생략)
+(종료 코드 0)

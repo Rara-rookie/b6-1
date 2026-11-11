@@ -530,13 +530,17 @@ ORDER BY r.rented_at ASC, r.id ASC;
 | `results/Q01.txt` ~ `results/Q15.txt` | 쿼리별 설명 헤더와 결과 표 |
 | `results/screenshots/Q01.png` ~ `Q15.png` | 위 쿼리별 결과 텍스트를 터미널 화면 형태로 그린 이미지 |
 | `results/screenshots/all_queries.png` | 전체 출력을 한 장으로 그린 이미지 |
+| `results/screenshots/evidence_01_*.png` ~ `evidence_06_*.png` | `init`·`seed`, 스키마 없는 `seed` 실패, FK·UNIQUE·CHECK 위반, 자동 시험, `all` 실행, 인덱스 실행 계획 |
+| `results/evidence/*.txt` | 위 증거 이미지의 텍스트 원본(`$ 명령`, 출력, 종료 코드) |
+| `results/screenshots/README.md` | 모든 이미지의 목록과 텍스트 원본 대응표 |
 | `results/explain_index.txt` | Q15 인덱스 생성 전후의 `EXPLAIN QUERY PLAN` 비교 |
 
 이미지는 실제 화면을 찍은 것이 아니라 `results/*.txt` 를 `scripts/render_captures.py` 로 렌더링한 것이다. 텍스트와 이미지의 내용은 항상 같다. 다시 만들려면 다음을 실행한다(Pillow 필요: `pip install pillow`).
 
 ```bash
-python scripts/render_captures.py
 python scripts/explain_index.py
+python scripts/capture_evidence.py
+python scripts/render_captures.py
 ```
 
 `all` 은 매번 DB 를 새로 만들므로 같은 명령을 다시 실행하면 같은 결과가 나온다.

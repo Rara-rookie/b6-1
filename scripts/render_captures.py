@@ -200,6 +200,10 @@ def main() -> int:
         name = f"Q{i:02d}"
         targets.append((results_dir / f"{name}.txt", screenshots_dir / f"{name}.png"))
     targets.append((results_dir / "all_queries.txt", screenshots_dir / "all_queries.png"))
+    evidence_dir = results_dir / "evidence"
+    if evidence_dir.is_dir():
+        for txt in sorted(evidence_dir.glob("*.txt")):
+            targets.append((txt, screenshots_dir / f"evidence_{txt.stem}.png"))
 
     created = 0
     for input_path, output_path in targets:

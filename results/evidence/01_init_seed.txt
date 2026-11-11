@@ -1,0 +1,14 @@
+$ python -m drawer_db.main init d1.db
+(종료 코드 0)
+
+$ python -m drawer_db.main seed d1.db
+(종료 코드 0)
+
+$ sqlite3 d1.db "SELECT ... COUNT(*) ..."
+t        | n 
+---------+---
+member   | 10
+category | 10
+book     | 10
+rental   | 12
+(종료 코드 0)

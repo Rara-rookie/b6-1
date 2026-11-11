@@ -1,0 +1,11 @@
+sqlite> INSERT INTO book (id, title, category_id) VALUES (99, 'x', 999)
+IntegrityError: FOREIGN KEY constraint failed
+sqlite> INSERT INTO rental (id, member_id, book_id, rented_at, is_overdue) VALUES (99, 999, 1, '2024-05-01', 0)
+IntegrityError: FOREIGN KEY constraint failed
+sqlite> DELETE FROM member WHERE id = 1
+IntegrityError: FOREIGN KEY constraint failed
+sqlite> INSERT INTO member (id, name, email) VALUES (99, 'dup', 'member1@example.com')
+IntegrityError: UNIQUE constraint failed: member.email
+sqlite> INSERT INTO rental (id, member_id, book_id, rented_at, is_overdue) VALUES (98, 1, 1, '2024-05-01', 2)
+IntegrityError: CHECK constraint failed: is_overdue IN (0, 1)
+(PRAGMA foreign_keys = ON 상태, 모든 위반이 거부됨)

@@ -1,0 +1,14 @@
+$ python -m unittest discover -s tests -v
+test_case1_init_creates_four_tables (test_drawer_db.TestDrawerDB.test_case1_init_creates_four_tables) ... ok
+test_case2_init_seed_row_counts (test_drawer_db.TestDrawerDB.test_case2_init_seed_row_counts) ... ok
+test_case3_foreign_key_violations (test_drawer_db.TestDrawerDB.test_case3_foreign_key_violations) ... ok
+test_case4_unique_and_check_violations (test_drawer_db.TestDrawerDB.test_case4_unique_and_check_violations) ... ok
+test_case5_seed_without_schema_raises_drawer_error (test_drawer_db.TestDrawerDB.test_case5_seed_without_schema_raises_drawer_error) ... ok
+test_case6_queries_output_has_all_15_headers (test_drawer_db.TestDrawerDB.test_case6_queries_output_has_all_15_headers) ... ok
+test_case7_main_return_values (test_drawer_db.TestDrawerDB.test_case7_main_return_values) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.086s
+
+OK
+(종료 코드 0)
